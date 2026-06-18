@@ -2,7 +2,7 @@
  * Core health/discovery/launch logic.
  */
 import { getClient, getTargetInfo, evaluate } from '../connection.js';
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import { execSync, spawn } from 'child_process';
 
 export async function healthCheck() {
@@ -173,6 +173,7 @@ export async function launch({ port, kill_existing } = {}) {
       `${process.env.LOCALAPPDATA}\\TradingView\\TradingView.exe`,
       `${process.env.PROGRAMFILES}\\TradingView\\TradingView.exe`,
       `${process.env['PROGRAMFILES(X86)']}\\TradingView\\TradingView.exe`,
+      ...(() => { try { const b=`${process.env.PROGRAMFILES}\\WindowsApps`; return readdirSync(b).filter(d=>d.startsWith('TradingView.Desktop_')).map(d=>`${b}\\${d}\\TradingView.exe`); } catch { return []; } })(),
     ],
     linux: [
       '/opt/TradingView/tradingview',

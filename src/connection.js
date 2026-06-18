@@ -90,9 +90,14 @@ export async function connect() {
 async function findChartTarget() {
   const resp = await fetch(`http://${CDP_HOST}:${CDP_PORT}/json/list`);
   const targets = await resp.json();
-  // Prefer targets with tradingview.com/chart in the URL
-  return targets.find(t => t.type === 'page' && /tradingview\.com\/chart/i.test(t.url))
-    || targets.find(t => t.type === 'page' && /tradingview/i.test(t.url))
+  const pages = targets.filter(t => t.type === 'page');
+  // Web app: prefer chart URL
+  return pages.find(t => /tradingview\.com\/chart/i.test(t.url))
+    || pages.find(t => /tradingview/i.test(t.url))
+    // Desktop Electron app: renderer window has rendererInitialData in URL
+    || pages.find(t => /rendererInitialData/i.test(t.url))
+    // Desktop Electron app fallback: any non-empty index.html page
+    || pages.find(t => /index\.html/i.test(t.url) && t.title)
     || null;
 }
 
